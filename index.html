@@ -77,6 +77,49 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-hexo-部署到github-pages关键步骤" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/" class="article-date">
+  <time class="dt-published" datetime="2023-10-12T03:03:06.000Z" itemprop="datePublished">2023-10-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/">hexo 部署到github pages关键步骤</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>1.hexo工程文件，博客内容的markdown文件，需要保存在一个分支。而生成的静态网站，需要存放在另外分支。<br>2.生成的静态网站并且发布到另外一个分支，可以通过hexo的插件完成。</p>
+<p>步骤1：<br>修改_config.yml文件，在最后加入以下配置：<br>  deploy:<br>    type: git<br>    repository: <a target="_blank" rel="noopener" href="https://github.com/username/username.github.io">https://github.com/username/username.github.io</a><br>    branch: main</p>
+<p>需要注意的发布分支bran需要和归档分支不同，发布分支需要和git仓pages设置中的分支一致</p>
+<p>步骤2：<br>安装<br>npm install hexo-deployer-git –save</p>
+<p>步骤3:<br>生成和发布<br>hexo clean<br>hexo g<br>hexo d</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/" data-id="clnmlot9b0000eoiy8az9alii" data-title="hexo 部署到github pages关键步骤" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/10/12/hello-world/" class="article-date">
@@ -285,6 +328,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/">hexo 部署到github pages关键步骤</a>
+          </li>
         
           <li>
             <a href="/2023/10/12/hello-world/">Hello World</a>
