@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>conda 环境迁移到 D 盘与常见问题 | SonicAudio&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="系统盘空间不足，第一个想到的元凶通常是 conda 环境：一个环境动辄几个 GB，而且默认全堆在用户目录下。下面记录一次把环境从 C 盘迁到 D 盘的完整过程，以及迁移之后遇到的启动器失效问题。 第一步：查看当前环境1conda env list  这会列出所有虚拟环境及其对应的目录，先确认哪些在 C 盘、各自占多大空间。 第二步：迁移现有环境推荐用克隆而不是直接挪文件夹。环境里有大量写死的绝对路">
+<meta property="og:type" content="article">
+<meta property="og:title" content="conda 环境迁移到 D 盘与常见问题">
+<meta property="og:url" content="https://feibuguocanghai.github.io/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="SonicAudio&#39;s blog">
+<meta property="og:description" content="系统盘空间不足，第一个想到的元凶通常是 conda 环境：一个环境动辄几个 GB，而且默认全堆在用户目录下。下面记录一次把环境从 C 盘迁到 D 盘的完整过程，以及迁移之后遇到的启动器失效问题。 第一步：查看当前环境1conda env list  这会列出所有虚拟环境及其对应的目录，先确认哪些在 C 盘、各自占多大空间。 第二步：迁移现有环境推荐用克隆而不是直接挪文件夹。环境里有大量写死的绝对路">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-15T04:04:18.000Z">
+<meta property="article:modified_time" content="2026-11-15T07:05:38.796Z">
+<meta property="article:author" content="sonicAudio">
+<meta property="article:tag" content="conda">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="环境管理">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="SonicAudio's blog" type="application/atom+xml">
+  
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">SonicAudio&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">每天进步一点点</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/atom.xml">RSS</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://feibuguocanghai.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-conda环境迁移到D盘与常见问题" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" class="article-date">
+  <time class="dt-published" datetime="2026-08-15T04:04:18.000Z" itemprop="datePublished">2026-08-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      conda 环境迁移到 D 盘与常见问题
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>系统盘空间不足，第一个想到的元凶通常是 conda 环境：一个环境动辄几个 GB，而且默认全堆在用户目录下。下面记录一次把环境从 C 盘迁到 D 盘的完整过程，以及迁移之后遇到的启动器失效问题。</p>
+<h2 id="第一步：查看当前环境"><a href="#第一步：查看当前环境" class="headerlink" title="第一步：查看当前环境"></a>第一步：查看当前环境</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda <span class="built_in">env</span> list</span><br></pre></td></tr></table></figure>
+
+<p>这会列出所有虚拟环境及其对应的目录，先确认哪些在 C 盘、各自占多大空间。</p>
+<h2 id="第二步：迁移现有环境"><a href="#第二步：迁移现有环境" class="headerlink" title="第二步：迁移现有环境"></a>第二步：迁移现有环境</h2><p>推荐用<strong>克隆</strong>而不是直接挪文件夹。环境里有大量写死的绝对路径（激活脚本、入口脚本、编译产物），直接剪切过去十有八九跑不起来，而 <code>--clone</code> 会在新路径下重建一份完整环境。</p>
+<p>假设要迁移的环境名为 <code>myenv</code>，把它克隆到 D 盘：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda create --prefix D:\conda_envs\myenv --<span class="built_in">clone</span> myenv</span><br></pre></td></tr></table></figure>
+
+<p>确认新环境能正常激活、包也都齐全之后，再删掉 C 盘上的旧环境释放空间：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda remove --name myenv --all</span><br></pre></td></tr></table></figure>
+
+<h2 id="第三步：改掉默认路径"><a href="#第三步：改掉默认路径" class="headerlink" title="第三步：改掉默认路径"></a>第三步：改掉默认路径</h2><p>不改配置的话，下次 <code>conda create</code> 还是会把环境建回 C 盘。</p>
+<p><strong>方法一：命令行</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda config --add envs_dirs D:\conda_envs</span><br></pre></td></tr></table></figure>
+
+<p><strong>方法二：直接改配置文件</strong></p>
+<p>编辑 <code>~/.condarc</code>（Windows 下通常是 <code>C:\Users\&lt;用户名&gt;\.condarc</code>），写入：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">envs_dirs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">D:\conda_envs</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">C:\Users\&lt;用户名&gt;\.conda\envs</span></span><br></pre></td></tr></table></figure>
+
+<p>conda 会按顺序优先在 <code>D:\conda_envs</code> 下创建新环境，找不到再回退到原路径。</p>
+<h2 id="第四步：验证"><a href="#第四步：验证" class="headerlink" title="第四步：验证"></a>第四步：验证</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda activate D:\conda_envs\myenv</span><br><span class="line">python -c <span class="string">&quot;import sys; print(sys.executable)&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>输出指向 D 盘就说明迁移成功。</p>
+<blockquote>
+<p><strong>两个提醒</strong></p>
+<ul>
+<li>迁移前如果环境很重要，先导出一份配置做备份：<code>conda env export -n myenv &gt; myenv.yml</code></li>
+<li>目标文件夹不存在时 conda 一般会自动创建，但提前手动建好更稳妥</li>
+</ul>
+</blockquote>
+<h2 id="删除同名环境时，别用-name"><a href="#删除同名环境时，别用-name" class="headerlink" title="删除同名环境时，别用 --name"></a>删除同名环境时，别用 <code>--name</code></h2><p>当 C 盘和 D 盘存在同名环境时，<code>--name</code> 只会匹配到第一个找到的，很容易删错。用 <code>--prefix</code> 指定完整路径才能精确删除：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda remove --prefix C:\Users\&lt;用户名&gt;\AppData\Local\miniforge-pypy3\envs\markitdown --all</span><br></pre></td></tr></table></figure>
+
+<p>几点注意：</p>
+<ul>
+<li><strong>核对路径</strong>：粘贴命令前再看一眼，确认是 C 盘那个，别把 D 盘的新环境删了</li>
+<li><strong>删完复查</strong>：再跑一次 <code>conda env list</code>，确认 C 盘的已消失、D 盘的还在</li>
+<li><strong>别碰 base</strong>：<code>C:\Users\&lt;用户名&gt;\AppData\Local\miniforge-pypy3</code> 是基础环境，删了 conda 直接报废</li>
+</ul>
+<h2 id="迁移之后，label-studio-起不来了"><a href="#迁移之后，label-studio-起不来了" class="headerlink" title="迁移之后，label-studio 起不来了"></a>迁移之后，label-studio 起不来了</h2><p>这是迁移最常见的后遗症：<code>label-studio.exe</code> 只是个<strong>启动器</strong>，内部硬编码了旧的 Python 解释器路径，环境一挪，路径就失效了。</p>
+<p>不用重装，两种修法。</p>
+<h3 id="方法一：绕开启动器，直接用模块启动"><a href="#方法一：绕开启动器，直接用模块启动" class="headerlink" title="方法一：绕开启动器，直接用模块启动"></a>方法一：绕开启动器，直接用模块启动</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m label_studio.server</span><br></pre></td></tr></table></figure>
+
+<p>能正常跑起来，就说明包本身完好，坏的只是那个 exe。适合先应急。</p>
+<h3 id="方法二：重建启动器（一劳永逸）"><a href="#方法二：重建启动器（一劳永逸）" class="headerlink" title="方法二：重建启动器（一劳永逸）"></a>方法二：重建启动器（一劳永逸）</h3><p>在当前环境里执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install --force-reinstall --no-deps label-studio</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>--force-reinstall</code>：强制重装，触发启动器重新生成</li>
+<li><code>--no-deps</code>：<strong>不重装依赖</strong>，只重建入口脚本，速度快而且不会搅乱现有依赖关系</li>
+</ul>
+<p>之后 <code>label-studio</code> 就恢复正常了。</p>
+<h2 id="更稳妥的迁移方式：conda-pack"><a href="#更稳妥的迁移方式：conda-pack" class="headerlink" title="更稳妥的迁移方式：conda-pack"></a>更稳妥的迁移方式：conda-pack</h2><p>如果还要再迁环境，用 <code>conda-pack</code> 打包，它会自动处理硬编码路径的问题：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在旧环境中打包</span></span><br><span class="line">conda pack -n tf2 -o tf2.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在新位置解压并激活</span></span><br><span class="line"><span class="built_in">mkdir</span> D:\conda_envs\tf2</span><br><span class="line">tar -xzf tf2.tar.gz -C D:\conda_envs\tf2</span><br><span class="line">conda activate D:\conda_envs\tf2</span><br><span class="line">conda-unpack  <span class="comment"># 自动修复所有路径</span></span><br></pre></td></tr></table></figure>
+
+<p>建议流程：先用方法一确认能否启动，没问题后再用方法二修启动器，下次迁移直接上 <code>conda-pack</code>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://feibuguocanghai.github.io/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" data-id="cmwhhroop000308x57b2ieah0" data-title="conda 环境迁移到 D 盘与常见问题" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/conda/" rel="tag">conda</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%8E%AF%E5%A2%83%E7%AE%A1%E7%90%86/" rel="tag">环境管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2026/09/11/ponytail-%E8%AE%A9AI%E7%BC%96%E7%A0%81Agent%E5%B0%91%E5%86%99%E4%BB%A3%E7%A0%81/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          Ponytail：让 AI 编码 Agent 少写代码的规则集
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">hexo 部署到github pages关键步骤</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI-%E7%BC%96%E7%A8%8B/">AI 编程</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E5%85%B7%E9%93%BE/">工具链</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI-%E7%BC%96%E7%A8%8B/" rel="tag">AI 编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ponytail/" rel="tag">Ponytail</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qoder/" rel="tag">Qoder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/conda/" rel="tag">conda</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8F%90%E7%A4%BA%E5%B7%A5%E7%A8%8B/" rel="tag">提示工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5/" rel="tag">时间同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%8E%AF%E5%A2%83%E7%AE%A1%E7%90%86/" rel="tag">环境管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="tag">虚拟机</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI-%E7%BC%96%E7%A8%8B/" style="font-size: 10px;">AI 编程</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Ponytail/" style="font-size: 10px;">Ponytail</a> <a href="/tags/Python/" style="font-size: 10px;">Python</a> <a href="/tags/Qoder/" style="font-size: 10px;">Qoder</a> <a href="/tags/Ubuntu/" style="font-size: 10px;">Ubuntu</a> <a href="/tags/conda/" style="font-size: 10px;">conda</a> <a href="/tags/%E6%8F%90%E7%A4%BA%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">提示工程</a> <a href="/tags/%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5/" style="font-size: 10px;">时间同步</a> <a href="/tags/%E7%8E%AF%E5%A2%83%E7%AE%A1%E7%90%86/" style="font-size: 10px;">环境管理</a> <a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/" style="font-size: 10px;">虚拟机</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/10/">十月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">九月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">八月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">十月 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/10/31/ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%97%B6%E9%97%B4%E5%B7%AE8%E5%B0%8F%E6%97%B6/">Ubuntu 虚拟机时间比主机差 8 小时：时区与 NTP 排查</a>
+          </li>
+        
+          <li>
+            <a href="/2026/09/11/ponytail-%E8%AE%A9AI%E7%BC%96%E7%A0%81Agent%E5%B0%91%E5%86%99%E4%BB%A3%E7%A0%81/">Ponytail：让 AI 编码 Agent 少写代码的规则集</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">conda 环境迁移到 D 盘与常见问题</a>
+          </li>
+        
+          <li>
+            <a href="/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/">hexo 部署到github pages关键步骤</a>
+          </li>
+        
+          <li>
+            <a href="/2023/10/11/gcc%E5%A4%9A%E7%89%88%E6%9C%AC%E5%88%87%E6%8D%A2/">gcc多版本切换</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 sonicAudio<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/atom.xml" class="mobile-nav-link">RSS</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
