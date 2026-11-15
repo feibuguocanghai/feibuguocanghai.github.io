@@ -37,6 +37,28 @@
     <author>
       <name>sonicAudio</name>
     </author>
+    <category term="数学" scheme="https://feibuguocanghai.github.io/categories/%E6%95%B0%E5%AD%A6/"/>
+    <category term="数学" scheme="https://feibuguocanghai.github.io/tags/%E6%95%B0%E5%AD%A6/"/>
+    <category term="芝诺悖论" scheme="https://feibuguocanghai.github.io/tags/%E8%8A%9D%E8%AF%BA%E6%82%96%E8%AE%BA/"/>
+    <category term="无穷级数" scheme="https://feibuguocanghai.github.io/tags/%E6%97%A0%E7%A9%B7%E7%BA%A7%E6%95%B0/"/>
+    <category term="微积分" scheme="https://feibuguocanghai.github.io/tags/%E5%BE%AE%E7%A7%AF%E5%88%86/"/>
+    <content>
+      <![CDATA[<p>「阿基里斯与乌龟」是古希腊哲学家<strong>芝诺</strong>提出的著名悖论：跑得最快的人追不上一只先出发的乌龟。它靠无限分割把一场必然的追赶说成永远追不上，而破解它的关键，是承认一个我们默认接受的错误前提——「无穷多步」不等于「无穷多时间」。</p><h2 id="悖论的描述"><a href="#悖论的描述" class="headerlink" title="悖论的描述"></a>悖论的描述</h2><p>假设：</p><ul><li>乌龟在兔子前面 10 米</li><li>兔子速度比乌龟快</li></ul><p>芝诺的推理是这样的：</p><ol><li>兔子要先跑到乌龟<strong>当前</strong>的位置（10 米处），但在这段时间里，乌龟又往前爬了一小段。</li><li>兔子再跑到乌龟<strong>新的</strong>位置，但乌龟又往前挪了一点。</li><li>如此无限循环……兔子似乎<strong>永远追不上</strong>乌龟。</li></ol><p>表面上看，每一步都有一个「微小差距」，步骤无穷多，所以兔子永远追不上？</p><h2 id="关键错误：无穷多步-≠-无穷多时间"><a href="#关键错误：无穷多步-≠-无穷多时间" class="headerlink" title="关键错误：无穷多步 ≠ 无穷多时间"></a>关键错误：无穷多步 ≠ 无穷多时间</h2><p>这个悖论的陷阱在于一个隐含的假设：</p><blockquote><p><strong>「无穷多个步骤」等于「需要无穷多的时间」</strong></p></blockquote><p>这个假设是错的。步骤可以无限细分，但每一步花的时间也在同步变小。</p><h2 id="用数学来破解"><a href="#用数学来破解" class="headerlink" title="用数学来破解"></a>用数学来破解</h2><p>举个具体例子：</p><ul><li>兔子速度：10 m&#x2F;s</li><li>乌龟速度：1 m&#x2F;s</li><li>初始距离：10 米</li></ul><p>按芝诺的分段法：</p><table><thead><tr><th>阶段</th><th>兔子追赶的距离</th><th>所需时间</th></tr></thead><tbody><tr><td>第 1 段</td><td>10 米</td><td>1 秒</td></tr><tr><td>第 2 段</td><td>1 米</td><td>0.1 秒</td></tr><tr><td>第 3 段</td><td>0.1 米</td><td>0.01 秒</td></tr><tr><td>第 4 段</td><td>0.01 米</td><td>0.001 秒</td></tr><tr><td>…</td><td>…</td><td>…</td></tr></tbody></table><p>把每段时间加起来：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">总时间 = 1 + 0.1 + 0.01 + 0.001 + ⋯</span><br><span class="line"></span><br><span class="line">这是一个无穷等比级数，首项 a = 1，公比 r = 0.1：</span><br><span class="line"></span><br><span class="line">S = a / (1 - r) = 1 / (1 - 0.1) = 1 / 0.9 ≈ 1.111 秒</span><br></pre></td></tr></table></figure><p><strong>无穷多个步骤，但总时间是有限的。</strong> 大约 1.11 秒后，兔子就追上乌龟了——而芝诺描述的「无限个瞬间」全部挤在这 1.11 秒里。</p><h2 id="本质总结"><a href="#本质总结" class="headerlink" title="本质总结"></a>本质总结</h2><table><thead><tr><th>误解</th><th>真相</th></tr></thead><tbody><tr><td>无穷多步 &#x3D; 无穷多时间</td><td>无穷多步可以收敛到一个<strong>有限值</strong></td></tr><tr><td>每次都有差距，所以追不上</td><td>差距在<strong>趋近于零</strong>，总和是有限的</td></tr><tr><td>空间和时间可以无限分割，所以运动不可能</td><td>无限分割是数学工具，不代表物理上「走不完」</td></tr></tbody></table><h2 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a>一句话总结</h2><blockquote><p>芝诺悖论的「魔力」在于把一段<strong>有限的路程</strong>人为拆成<strong>无穷多小段</strong>，让人误以为「无穷多步就永远走不完」。但无穷小量加在一起，完全可以等于一个有限的数——这正是微积分中「极限」和「无穷级数收敛」的核心思想。</p></blockquote><p>所以现实中兔子当然能轻松超过乌龟，数学也完全支持这一点。</p><p>芝诺还提过「飞矢不动」等类似悖论，用的同样是无限分割否定运动，破法也走同一条路：分割的无限性不构成结果上的无限。</p>]]>
+    </content>
+    <id>https://feibuguocanghai.github.io/2026/10/05/%E9%98%BF%E5%9F%BA%E9%87%8C%E6%96%AF%E4%B8%8E%E4%B9%8C%E9%BE%9F-%E8%8A%9D%E8%AF%BA%E6%82%96%E8%AE%BA/</id>
+    <link href="https://feibuguocanghai.github.io/2026/10/05/%E9%98%BF%E5%9F%BA%E9%87%8C%E6%96%AF%E4%B8%8E%E4%B9%8C%E9%BE%9F-%E8%8A%9D%E8%AF%BA%E6%82%96%E8%AE%BA/"/>
+    <published>2026-10-05T12:09:47.000Z</published>
+    <summary>
+      <![CDATA[<p>「阿基里斯与乌龟」是古希腊哲学家<strong>芝诺</strong>提出的著名悖论：跑得最快的人追不上一只先出发的乌龟。它靠无限分割把一场必然的追赶说成永远追不上，而破解它的关键，是承认一个我们默认接受的错误前提——「无穷多步」不等于「无穷多时间」。</p>
+<h2 id]]>
+    </summary>
+    <title>阿基里斯与乌龟：无穷级数怎么破解芝诺悖论</title>
+    <updated>2026-11-15T07:23:03.117Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>sonicAudio</name>
+    </author>
     <category term="AI 编程" scheme="https://feibuguocanghai.github.io/categories/AI-%E7%BC%96%E7%A8%8B/"/>
     <category term="Ponytail" scheme="https://feibuguocanghai.github.io/tags/Ponytail/"/>
     <category term="Qoder" scheme="https://feibuguocanghai.github.io/tags/Qoder/"/>
@@ -53,6 +75,33 @@
     </summary>
     <title>Ponytail：让 AI 编码 Agent 少写代码的规则集</title>
     <updated>2026-11-15T07:05:38.822Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>sonicAudio</name>
+    </author>
+    <category term="杂记" scheme="https://feibuguocanghai.github.io/categories/%E6%9D%82%E8%AE%B0/"/>
+    <category term="数据对比" scheme="https://feibuguocanghai.github.io/tags/%E6%95%B0%E6%8D%AE%E5%AF%B9%E6%AF%94/"/>
+    <category term="知识库" scheme="https://feibuguocanghai.github.io/tags/%E7%9F%A5%E8%AF%86%E5%BA%93/"/>
+    <category term="中文互联网" scheme="https://feibuguocanghai.github.io/tags/%E4%B8%AD%E6%96%87%E4%BA%92%E8%81%94%E7%BD%91/"/>
+    <content>
+      <![CDATA[<p>关于中文互联网的内容密度，讨论很多，但「多」和「少」凭感觉很难判断。把几个能查到的量化维度摆在一起，至少能看出量级上的差距。</p><table><thead><tr><th>对比维度</th><th>欧美英文核心数据</th><th>中文核心数据</th></tr></thead><tbody><tr><td>维基百科词条数</td><td>722 万+</td><td>155 万+</td></tr><tr><td>年新书出版量</td><td>欧美合计年新书超 45 万种</td><td>中国年新书超 22 万种</td></tr><tr><td>国际科技论文总量</td><td>欧美十年累计超 1200 万篇</td><td>中国十年累计 498 万篇</td></tr><tr><td>学术期刊总量</td><td>欧美 SCI&#x2F;SSCI&#x2F;AHCI 期刊超 1.4 万种</td><td>中国大陆科技期刊共 5325 种</td></tr><tr><td>年度新歌上线量</td><td>欧美年新增 ISRC 编码歌曲超 4000 万首</td><td>中国年新增上线歌曲约 500 万首</td></tr><tr><td>年度 PCT 专利申请量</td><td>欧美合计约 11 万件</td><td>中国 2025 年 PCT 申请 7.86 万件</td></tr></tbody></table><h2 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h2><ul><li><strong>期刊维度</strong>：2026 年 1 月科睿唯安更新的目录中，SCIE、SSCI、AHCI 三类英文期刊合计超 1.4 万本；中国大陆同期科技期刊总量为 5325 种，其中英文刊仅 531 种。</li><li><strong>歌曲维度</strong>：2025 年全球新增 ISRC 编码新歌超 5120 万首，欧美产出占比超 78%；中文新歌年上线量约 500 万首，约为欧美英文新歌总量的 1&#x2F;8。</li><li><strong>专利维度</strong>：2025 年全球 PCT 申请量约 27.59 万件，欧美合计约 11 万件；中国以 7.86 万件单国申请量位居全球第一，但欧美英文区域整体占全球总量 40% 以上。</li></ul><h2 id="怎么读这组数字"><a href="#怎么读这组数字" class="headerlink" title="怎么读这组数字"></a>怎么读这组数字</h2><p>按同一维度做除法，中文体量大致落在英文的 <strong>1&#x2F;8 到 7&#x2F;10</strong> 之间：维基词条约 1&#x2F;5，年新书约 1&#x2F;2，科技论文约 2&#x2F;5，期刊约 2&#x2F;5，新歌约 1&#x2F;8，PCT 申请约 7&#x2F;10。差距最大的在「按语言划分的内容生产」（歌曲、百科），最接近的在「按国别统计的专利」。</p><p>但要注意两列的口径并不对等：一边是「欧美合计」，一边是「中国单国」，而且语言人口、出版许可制度、平台生态都不同。所以这些数字适合用来看<strong>量级差异</strong>，不适合当成精确的语言优劣判断，更不适合相加折算成一个「知识总量」。</p>]]>
+    </content>
+    <id>https://feibuguocanghai.github.io/2026/08/15/%E8%8B%B1%E6%96%87%E4%B8%8E%E4%B8%AD%E6%96%87%E7%9F%A5%E8%AF%86%E5%BA%93%E4%BD%93%E9%87%8F%E5%AF%B9%E6%AF%94/</id>
+    <link href="https://feibuguocanghai.github.io/2026/08/15/%E8%8B%B1%E6%96%87%E4%B8%8E%E4%B8%AD%E6%96%87%E7%9F%A5%E8%AF%86%E5%BA%93%E4%BD%93%E9%87%8F%E5%AF%B9%E6%AF%94/"/>
+    <published>2026-08-15T04:04:38.000Z</published>
+    <summary>
+      <![CDATA[<p>关于中文互联网的内容密度，讨论很多，但「多」和「少」凭感觉很难判断。把几个能查到的量化维度摆在一起，至少能看出量级上的差距。</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>欧美英文核心数据</th>
+<th>中文核心数据</th>
+<]]>
+    </summary>
+    <title>英文与中文知识库体量对比</title>
+    <updated>2026-11-15T07:22:58.392Z</updated>
   </entry>
   <entry>
     <author>
