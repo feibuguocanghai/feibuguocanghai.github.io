@@ -1,0 +1,1017 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.svg">
+  <link rel="icon" href="/img/favicon.svg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#232f3e">
+  <meta name="author" content="sonicAudio">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 ICLR 2024 &#x2F; Hubert Siuzdak（Gemelo AI）&#x2F; 开源：gemelo-ai&#x2F;vocos  主流神经声码器基本走时域 GAN 这条路（HiFi-GAN、BigVGAN），靠转置卷积把特征逐级上采样到波形分辨率。这条路有两个代价：一是忽略了时频表示本身的归纳偏置，做了一堆冗余且昂贵的上采样；二是转置卷积天然带来混叠伪影，还得额外挂抗">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vocos：用 ISTFT 替代转置卷积的声码器">
+<meta property="og:url" content="https://feibuguocanghai.github.io/2026/11/15/Vocos-%E5%82%85%E9%87%8C%E5%8F%B6%E5%9F%9F%E5%A3%B0%E7%A0%81%E5%99%A8/index.html">
+<meta property="og:site_name" content="SonicAudio&#39;s blog">
+<meta property="og:description" content="论文信息 ICLR 2024 &#x2F; Hubert Siuzdak（Gemelo AI）&#x2F; 开源：gemelo-ai&#x2F;vocos  主流神经声码器基本走时域 GAN 这条路（HiFi-GAN、BigVGAN），靠转置卷积把特征逐级上采样到波形分辨率。这条路有两个代价：一是忽略了时频表示本身的归纳偏置，做了一堆冗余且昂贵的上采样；二是转置卷积天然带来混叠伪影，还得额外挂抗">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-15T03:10:00.000Z">
+<meta property="article:modified_time" content="2026-11-15T07:54:54.579Z">
+<meta property="article:author" content="sonicAudio">
+<meta property="article:tag" content="声码器">
+<meta property="article:tag" content="语音合成">
+<meta property="article:tag" content="ConvNeXt">
+<meta property="article:tag" content="ICLR 2024">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <title>Vocos：用 ISTFT 替代转置卷积的声码器 - SonicAudio&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"feibuguocanghai.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":90,"cursorChar":"_","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h2,h3,h4","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":2,"color":"#3d6aff","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"text"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":false,"placement":"right","headingSelector":"h2,h3,h4","collapseDepth":2},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="SonicAudio's blog" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 45vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>SonicAudio</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/tags/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-tags-fill"></i>
+                  <span>标签</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner.svg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Vocos：用 ISTFT 替代转置卷积的声码器</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-11-15 11:10" pubdate>
+          2026-11-15
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          4 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Vocos：用 ISTFT 替代转置卷积的声码器</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>论文信息</strong></p>
+<p>ICLR 2024 &#x2F; Hubert Siuzdak（Gemelo AI）&#x2F; 开源：<a target="_blank" rel="noopener" href="https://github.com/gemelo-ai/vocos">gemelo-ai&#x2F;vocos</a></p>
+</blockquote>
+<p>主流神经声码器基本走时域 GAN 这条路（HiFi-GAN、BigVGAN），靠转置卷积把特征逐级上采样到波形分辨率。这条路有两个代价：一是忽略了时频表示本身的归纳偏置，做了一堆冗余且昂贵的上采样；二是转置卷积天然带来混叠伪影，还得额外挂抗混叠模块去补。</p>
+<p>傅里叶域看起来更合理——时频表示更贴近人耳感知，FFT 有成熟快速算法——但直接重建复值频谱图一直卡在相位恢复上：相位的感知重要性在文献里尚无定论，此前用 GAN 直接生成 STFT 系数的尝试也因训练不稳定而失败。</p>
+<p>Vocos 的贡献就是把这个僵局推开：它是第一个能直接生成复数 STFT 系数的 GAN 声码器，全程不用转置卷积。</p>
+<h2 id="核心思路：全程等分辨率，一步-ISTFT"><a href="#核心思路：全程等分辨率，一步-ISTFT" class="headerlink" title="核心思路：全程等分辨率，一步 ISTFT"></a>核心思路：全程等分辨率，一步 ISTFT</h2><p>Vocos 的做法很干脆——<strong>完全放弃转置卷积</strong>，整个网络保持同一时间分辨率（各向同性架构），从频谱到波形的上采样只由一次<strong>逆快速傅里叶变换（ISTFT）</strong>完成。</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>传统时域声码器</th>
+<th>Vocos</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>上采样方式</td>
+<td>转置卷积（逐级放大数百倍）</td>
+<td>ISTFT（一步完成）</td>
+</tr>
+<tr>
+<td>时间分辨率</td>
+<td>逐层递增</td>
+<td>全程保持不变</td>
+</tr>
+<tr>
+<td>网络结构</td>
+<td>ResBlock + 膨胀卷积</td>
+<td>ConvNeXt Block</td>
+</tr>
+<tr>
+<td>混叠问题</td>
+<td>需要额外抗混叠模块</td>
+<td>天然避免</td>
+</tr>
+</tbody></table>
+<p>省掉上采样等于省掉了网络里最贵的那部分，速度提升的数量级就来自这里。</p>
+<h3 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h3><p><strong>骨干</strong>用 <strong>ConvNeXt</strong>：输入特征先嵌入到隐藏维度，再经过堆叠的 1D 卷积块。每个块是”深度卷积 → 倒置瓶颈（逐点卷积升维）→ GELU → LayerNorm”这套组合。注意它在低时间分辨率下替代的是膨胀卷积，不是因为流行——消融里换成 ResBlock 后各项指标一律下降。</p>
+<p><strong>输出头</strong>分幅度和相位两路。幅度走指数函数保证非负，即 <code>M = exp(m)</code>。</p>
+<p>相位则输出 sin&#x2F;cos 两个分量，落在单位圆上。这个参数化方式看似简单，实际是解决相位卷绕（phase wrapping）的关键——把相位约束在单位圆上，模型就不必去处理 2π 跳变。</p>
+<h3 id="判别器与损失"><a href="#判别器与损失" class="headerlink" title="判别器与损失"></a>判别器与损失</h3><p>判别器由两部分构成：来自 HiFi-GAN 的多周期判别器（MPD），以及来自 UniVNet 的多分辨率判别器（MRD）。</p>
+<p>损失用 <strong>Hinge</strong> 形式而非 LSGAN，三项相加：</p>
+<ol>
+<li><strong>重建损失</strong> <code>L_mel</code>：真实与合成样本的 Mel 幅度谱之间的 L1 距离；</li>
+<li><strong>对抗损失</strong>：Hinge 形式的生成器&#x2F;判别器损失；</li>
+<li><strong>特征匹配损失</strong> <code>L_feat</code>：判别器各层特征图的 L1 距离均值。</li>
+</ol>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="Mel-频谱图重建（LibriTTS，24kHz）"><a href="#Mel-频谱图重建（LibriTTS，24kHz）" class="headerlink" title="Mel 频谱图重建（LibriTTS，24kHz）"></a>Mel 频谱图重建（LibriTTS，24kHz）</h3><table>
+<thead>
+<tr>
+<th>模型</th>
+<th>UTMOS↑</th>
+<th>VISQOL↑</th>
+<th>PESQ↑</th>
+<th>V&#x2F;UV F1↑</th>
+<th>Periodicity↓</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HiFi-GAN</td>
+<td>3.669</td>
+<td>4.57</td>
+<td>3.093</td>
+<td>0.9457</td>
+<td>0.129</td>
+</tr>
+<tr>
+<td>iSTFTNet</td>
+<td>3.564</td>
+<td>4.56</td>
+<td>2.942</td>
+<td>0.9372</td>
+<td>0.141</td>
+</tr>
+<tr>
+<td>BigVGAN</td>
+<td>3.749</td>
+<td>4.65</td>
+<td>3.693</td>
+<td>0.9557</td>
+<td>0.108</td>
+</tr>
+<tr>
+<td><strong>Vocos</strong></td>
+<td>3.734</td>
+<td><strong>4.66</strong></td>
+<td><strong>3.70</strong></td>
+<td><strong>0.9582</strong></td>
+<td><strong>0.101</strong></td>
+</tr>
+</tbody></table>
+<p>除 UTMOS 略低于 BigVGAN 外，VISQOL、PESQ、V&#x2F;UV F1 和 Periodicity 全部最优。Periodicity 这一项值得单独看——周期性伪影是时域 GAN 的老毛病，Vocos 把它压到了最低。</p>
+<p>主观评估上，Vocos MOS 3.62±0.15，与 BigVGAN 的 3.64±0.15 无统计显著差异；SMOS 4.55±0.15，略高于 BigVGAN 的 4.54±0.14。换句话说，速度提升三个数量级，感知质量不掉。</p>
+<h3 id="分布外泛化（MUSDB18）"><a href="#分布外泛化（MUSDB18）" class="headerlink" title="分布外泛化（MUSDB18）"></a>分布外泛化（MUSDB18）</h3><p>在音乐数据集 MUSDB18 上，Vocos 在混合、鼓、贝斯、其他乐器、人声所有类别上都拿到最高 VISQOL。频谱图可视化显示，它不需要任何抗混叠模块就能准确重建高频谐波——这正好印证了 ISTFT 上采样的优势。</p>
+<h3 id="作为神经编解码器解码器"><a href="#作为神经编解码器解码器" class="headerlink" title="作为神经编解码器解码器"></a>作为神经编解码器解码器</h3><p>把 Vocos 当作 EnCodec 的解码器替换掉原解码器，主观 MOS 大幅领先：</p>
+<table>
+<thead>
+<tr>
+<th>带宽</th>
+<th>Vocos MOS</th>
+<th>EnCodec MOS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.5 kbps</td>
+<td>2.73</td>
+<td>1.09</td>
+</tr>
+<tr>
+<td>3 kbps</td>
+<td>3.50</td>
+<td>1.71</td>
+</tr>
+<tr>
+<td>6 kbps</td>
+<td>3.84</td>
+<td>2.41</td>
+</tr>
+<tr>
+<td>12 kbps</td>
+<td>4.00</td>
+<td>3.08</td>
+</tr>
+</tbody></table>
+<p>低带宽下的差距尤其大（1.5 kbps 是 2.5 倍），说明这套傅里叶域重建对编码残差很宽容。Vocos 也可以作为 Bark TTS 系统的即插即用声码器。</p>
+<h3 id="推理速度"><a href="#推理速度" class="headerlink" title="推理速度"></a>推理速度</h3><table>
+<thead>
+<tr>
+<th>模型</th>
+<th>GPU xRT↑</th>
+<th>CPU xRT↑</th>
+<th>参数量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HiFi-GAN</td>
+<td>495.54</td>
+<td>5.84</td>
+<td>14.0M</td>
+</tr>
+<tr>
+<td>BigVGAN</td>
+<td>98.61</td>
+<td>0.40</td>
+<td>14.0M</td>
+</tr>
+<tr>
+<td>iSTFTNet</td>
+<td>1045.94</td>
+<td>14.44</td>
+<td>13.3M</td>
+</tr>
+<tr>
+<td><strong>Vocos</strong></td>
+<td><strong>6696.52</strong></td>
+<td><strong>169.63</strong></td>
+<td><strong>13.5M</strong></td>
+</tr>
+</tbody></table>
+<p>GPU 上比 HiFi-GAN 快约 13 倍、比 BigVGAN 快约 70 倍；CPU 上优势更夸张，比 BigVGAN 快 400 倍以上。参数量反而是这几个里最大的，速度全部来自省掉的上采样。</p>
+<h3 id="消融"><a href="#消融" class="headerlink" title="消融"></a>消融</h3><table>
+<thead>
+<tr>
+<th>变体</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>绝对相位（tanh）</td>
+<td>质量明显下降，证明隐式相位卷绕的重要性</td>
+</tr>
+<tr>
+<td>Snake 激活函数</td>
+<td>略有下降，因为 Vocos 已通过傅里叶基函数显式引入了周期性，不需要额外的周期激活</td>
+</tr>
+<tr>
+<td>去掉 ConvNeXt（换 ResBlock）</td>
+<td>所有指标下降，ConvNeXt 对 Vocos 是必需的</td>
+</tr>
+</tbody></table>
+<h3 id="MDCT-变体的失败（附录）"><a href="#MDCT-变体的失败（附录）" class="headerlink" title="MDCT 变体的失败（附录）"></a>MDCT 变体的失败（附录）</h3><p>论文还试了用修正离散余弦变换（MDCT）替代 STFT，探索了 symexp 和 sign 两种参数化方式，结果都显著弱于 STFT 基线。作者的解释是：STFT 的冗余性对生成任务是有利的，MDCT 的临界采样特性反而让 GAN 难以建模。这个负结果挺有价值——它说明”更紧致的表示”在生成任务里未必是优势。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Vocos 的核心贡献可以归为五点：</p>
+<ol>
+<li><strong>首个直接生成复数 STFT 系数的 GAN 声码器</strong>，全程无需转置卷积；</li>
+<li><strong>单位圆相位激活</strong>，用极简的方式解决相位卷绕，为相位建模提供归纳偏置；</li>
+<li><strong>ConvNeXt 骨干</strong>，在低时间分辨率下替代膨胀卷积，效果更好；</li>
+<li><strong>数量级的速度提升</strong>，靠 ISTFT 替代转置卷积实现；</li>
+<li><strong>质量匹配 SOTA</strong>，主客观评估都在最先进水平，同时缓解了周期性伪影。</li>
+</ol>
+<p>更长远的意义在于它打破了”时域 GAN 主导声码器”这个范式：把信号处理的先验知识（傅里叶基的周期性、共轭对称性）当作归纳偏置嵌进网络结构，比让网络自己从数据里学这些约束要高效得多。这条思路对音频合成之外的问题同样成立。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" class="category-chain-item">论文笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%A3%B0%E7%A0%81%E5%99%A8/" class="print-no-link">#声码器</a>
+      
+        <a href="/tags/%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90/" class="print-no-link">#语音合成</a>
+      
+        <a href="/tags/ConvNeXt/" class="print-no-link">#ConvNeXt</a>
+      
+        <a href="/tags/ICLR-2024/" class="print-no-link">#ICLR 2024</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Vocos：用 ISTFT 替代转置卷积的声码器</div>
+      <div>https://feibuguocanghai.github.io/2026/11/15/Vocos-傅里叶域声码器/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>sonicAudio</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026-11-15</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026-11-15</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/11/15/FARGAN-%E6%9E%81%E4%BD%8E%E5%A4%8D%E6%9D%82%E5%BA%A6%E8%87%AA%E5%9B%9E%E5%BD%92GAN%E5%A3%B0%E7%A0%81%E5%99%A8/" title="FARGAN：600 MFLOPS 的自回归 GAN 声码器">
+                        <span class="hidden-mobile">FARGAN：600 MFLOPS 的自回归 GAN 声码器</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <span>SonicAudio · 每天进步一点点</span> <span class="footer-sep">|</span> <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

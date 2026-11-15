@@ -338,6 +338,207 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2026/11/15/Vocos-%E5%82%85%E9%87%8C%E5%8F%B6%E5%9F%9F%E5%A3%B0%E7%A0%81%E5%99%A8/" target="_self">
+          Vocos：用 ISTFT 替代转置卷积的声码器
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/11/15/Vocos-%E5%82%85%E9%87%8C%E5%8F%B6%E5%9F%9F%E5%A3%B0%E7%A0%81%E5%99%A8/" target="_self">
+        <div>
+          论文信息 ICLR 2024 &#x2F; Hubert Siuzdak（Gemelo AI）&#x2F; 开源：gemelo-ai&#x2F;vocos  主流神经声码器基本走时域 GAN 这条路（HiFi-GAN、BigVGAN），靠转置卷积把特征逐级上采样到波形分辨率。这条路有两个代价：一是忽略了时频表示本身的归纳偏置，做了一堆冗余且昂贵的上采样；二是转置卷积天然带来混叠伪影，还得额外挂抗
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-11-15 11:10" pubdate>
+              2026-11-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" class="category-chain-item">论文笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%A3%B0%E7%A0%81%E5%99%A8/">#声码器</a>
+            
+              <a href="/tags/%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90/">#语音合成</a>
+            
+              <a href="/tags/ConvNeXt/">#ConvNeXt</a>
+            
+              <a href="/tags/ICLR-2024/">#ICLR 2024</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/11/15/FARGAN-%E6%9E%81%E4%BD%8E%E5%A4%8D%E6%9D%82%E5%BA%A6%E8%87%AA%E5%9B%9E%E5%BD%92GAN%E5%A3%B0%E7%A0%81%E5%99%A8/" target="_self">
+          FARGAN：600 MFLOPS 的自回归 GAN 声码器
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/11/15/FARGAN-%E6%9E%81%E4%BD%8E%E5%A4%8D%E6%9D%82%E5%BA%A6%E8%87%AA%E5%9B%9E%E5%BD%92GAN%E5%A3%B0%E7%A0%81%E5%99%A8/" target="_self">
+        <div>
+          神经声码器在 TTS、低比特率语音编码、超分辨率和降噪里已经是标配，但在实时通信这类场景里，它往往就是整条链路里计算最重的一环——算法延迟要压到 20ms 以内，功耗还有硬约束。FARGAN（Framewise Autoregressive GAN）就是冲着这个约束去的：用显式的基音预测替代 Teacher-forcing，把自回归 GAN 声码器的复杂度压到 600 MFLOPS，同时质量不掉。
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-11-15 10:45" pubdate>
+              2026-11-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" class="category-chain-item">论文笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%A3%B0%E7%A0%81%E5%99%A8/">#声码器</a>
+            
+              <a href="/tags/%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90/">#语音合成</a>
+            
+              <a href="/tags/GAN/">#GAN</a>
+            
+              <a href="/tags/%E4%BD%8E%E5%A4%8D%E6%9D%82%E5%BA%A6/">#低复杂度</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/11/15/LiteCASS-%E5%AE%9E%E6%97%B6%E7%AB%8B%E4%BD%93%E5%A3%B0%E7%94%B5%E5%BD%B1%E9%9F%B3%E9%A2%91%E6%BA%90%E5%88%86%E7%A6%BB/" target="_self">
+          LiteCASS：1.06M 参数跑实时立体声电影音频分离
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/11/15/LiteCASS-%E5%AE%9E%E6%97%B6%E7%AB%8B%E4%BD%93%E5%A3%B0%E7%94%B5%E5%BD%B1%E9%9F%B3%E9%A2%91%E6%BA%90%E5%88%86%E7%A6%BB/" target="_self">
+        <div>
+          电影音频源分离（Cinematic Audio Source Separation，CASS）要把一条混合音轨拆成对白、音乐、音效三条 stem。现有的 MRX、BandIt、AV-CASS 动辄 30M 参数以上，必须靠 GPU 才能实时；更麻烦的是它们几乎都只处理单声道，而真实电影音轨是立体声甚至多声道的，分离时还得把声像这类空间线索一起保住。 LiteCASS 是西南财经大学、小米汽车与武汉
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-11-15 10:20" pubdate>
+              2026-11-15
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" class="category-chain-item">论文笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E8%AF%AD%E9%9F%B3%E5%88%86%E7%A6%BB/">#语音分离</a>
+            
+              <a href="/tags/CASS/">#CASS</a>
+            
+              <a href="/tags/%E8%BD%BB%E9%87%8F%E6%A8%A1%E5%9E%8B/">#轻量模型</a>
+            
+              <a href="/tags/%E5%AE%9E%E6%97%B6%E6%8E%A8%E7%90%86/">#实时推理</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2026/10/31/ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%97%B6%E9%97%B4%E5%B7%AE8%E5%B0%8F%E6%97%B6/" target="_self">
           Ubuntu 虚拟机时间比主机差 8 小时：时区与 NTP 排查
         </a>
@@ -793,72 +994,13 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2023/10/11/fftw%E7%BC%96%E8%AF%91/" target="_self">
-          fftw编译
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2023/10/11/fftw%E7%BC%96%E8%AF%91/" target="_self">
-        <div>
-          fftw 3.3.10版本，目前支持cmake编译 windows编译过程如下mkdir buildcd buildcmake -DBUILD_SHARED_LIBS&#x3D;OFF -DBUILD_TESTS&#x3D;OFF -DENABLE_FLOAT&#x3D;ON -DENABLE_SSE&#x3D;ON -DENABLE_SSE2&#x3D;ON -DENABLE_AVX&#x3D;
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2023-10-11 17:11" pubdate>
-              2023-10-11
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E7%BC%96%E8%AF%91/" class="category-chain-item">编译</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/FFTW/">#FFTW</a>
-            
-              <a href="/tags/CMake/">#CMake</a>
-            
-              <a href="/tags/Windows/">#Windows</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
 
 
+  <nav aria-label="navigation">
+    <span class="pagination" id="pagination">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/#board">2</a><a class="extend next" rel="next" href="/page/2/#board"><i class="iconfont icon-arrowright"></i></a>
+    </span>
+  </nav>
 
 
 
