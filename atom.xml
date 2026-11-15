@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <author>
+    <name>sonicAudio</name>
+  </author>
+  <generator uri="https://hexo.io/">Hexo</generator>
+  <id>https://feibuguocanghai.github.io/</id>
+  <link href="https://feibuguocanghai.github.io/" rel="alternate"/>
+  <link href="https://feibuguocanghai.github.io/atom.xml" rel="self"/>
+  <rights>All rights reserved 2026, sonicAudio</rights>
+  <subtitle>希望能坚持写技术博客</subtitle>
+  <title>我的Hexo博客</title>
+  <updated>2024-10-22T14:43:30.512Z</updated>
+  <entry>
+    <author>
+      <name>sonicAudio</name>
+    </author>
+    <content>
+      <![CDATA[<p>1.hexo工程文件，博客内容的markdown文件，需要保存在一个分支。而生成的静态网站，需要存放在另外分支。<br>2.生成的静态网站并且发布到另外一个分支，可以通过hexo的插件完成。</p><p>步骤1：<br>修改_config.yml文件，在最后加入以下配置：<br>  deploy:<br>    type: git<br>    repository: <a href="https://github.com/username/username.github.io">https://github.com/username/username.github.io</a><br>    branch: main</p><p>需要注意的发布分支bran需要和归档分支不同，发布分支需要和git仓pages设置中的分支一致</p><p>步骤2：<br>安装<br>npm install hexo-deployer-git –save</p><p>步骤3:<br>生成和发布<br>hexo clean<br>hexo g<br>hexo d</p>]]>
+    </content>
+    <id>https://feibuguocanghai.github.io/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/</id>
+    <link href="https://feibuguocanghai.github.io/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/"/>
+    <published>2023-10-12T03:03:06.000Z</published>
+    <summary>
+      <![CDATA[<p>1.hexo工程文件，博客内容的markdown文件，需要保存在一个分支。而生成的静态网站，需要存放在另外分支。<br>2.生成的静态网站并且发布到另外一个分支，可以通过hexo的插件完成。</p>
+<p>步骤1：<br>修改_config.yml文件，在最后加入以下配置：]]>
+    </summary>
+    <title>hexo 部署到github pages关键步骤</title>
+    <updated>2024-10-22T14:43:30.512Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>sonicAudio</name>
+    </author>
+    <content>
+      <![CDATA[<p>执行以下命令 </p><p>  sudo apt install build-essential<br>  $ sudo apt -y install gcc-7 g++-7 gcc-8 g++-8 gcc-9 g++-9 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;gcc gcc &#x2F;usr&#x2F;bin&#x2F;gcc-7 7 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;g++ g++ &#x2F;usr&#x2F;bin&#x2F;g++-7 7 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;gcc gcc &#x2F;usr&#x2F;bin&#x2F;gcc-8 8 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;g++ g++ &#x2F;usr&#x2F;bin&#x2F;g++-8 8 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;gcc gcc &#x2F;usr&#x2F;bin&#x2F;gcc-9 9 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;g++ g++ &#x2F;usr&#x2F;bin&#x2F;g++-9 9 </p><p>$ sudo update-alternatives –config gcc<br>There are 3 choices for the alternative gcc (providing &#x2F;usr&#x2F;bin&#x2F;gcc).<br>Selection    Path            Priority   Status————————————————————<br>0            &#x2F;usr&#x2F;bin&#x2F;gcc-9   9         auto mode<br>1            &#x2F;usr&#x2F;bin&#x2F;gcc-7   7         manual mode*<br>2            &#x2F;usr&#x2F;bin&#x2F;gcc-8   8         manual mode<br>3            &#x2F;usr&#x2F;bin&#x2F;gcc-9   9         manual mode<br>Press  to keep the current choice[*], or type selection number: </p><p>$ sudo update-alternatives –config g++<br>There are 3 choices for the alternative g++ (providing &#x2F;usr&#x2F;bin&#x2F;g++).<br> Selection    Path            Priority   Status————————————————————*<br>0            &#x2F;usr&#x2F;bin&#x2F;g++-9   9         auto mode<br>1            &#x2F;usr&#x2F;bin&#x2F;g++-7   7         manual mode<br>2            &#x2F;usr&#x2F;bin&#x2F;g++-8   8         manual mode<br>3            &#x2F;usr&#x2F;bin&#x2F;g++-9   9         manual mode<br>Press  to keep the current choice[*], or type selection number:</p><p>$ gcc –version<br>$ g++ –version</p>]]>
+    </content>
+    <id>https://feibuguocanghai.github.io/2023/10/11/gcc%E5%A4%9A%E7%89%88%E6%9C%AC%E5%88%87%E6%8D%A2/</id>
+    <link href="https://feibuguocanghai.github.io/2023/10/11/gcc%E5%A4%9A%E7%89%88%E6%9C%AC%E5%88%87%E6%8D%A2/"/>
+    <published>2023-10-11T09:12:30.000Z</published>
+    <summary>
+      <![CDATA[<p>执行以下命令 </p>
+<p>  sudo apt install build-essential<br>  $ sudo apt -y install gcc-7 g++-7 gcc-8 g++-8 gcc-9 g++-9 </p>
+<p>  sudo update-al]]>
+    </summary>
+    <title>gcc多版本切换</title>
+    <updated>2024-10-22T14:43:30.512Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>sonicAudio</name>
+    </author>
+    <content>
+      <![CDATA[<p>fftw 3.3.10版本，目前支持cmake编译</p><p>windows编译过程如下<br>mkdir build<br>cd build<br>cmake -DBUILD_SHARED_LIBS&#x3D;OFF -DBUILD_TESTS&#x3D;OFF -DENABLE_FLOAT&#x3D;ON -DENABLE_SSE&#x3D;ON -DENABLE_SSE2&#x3D;ON -DENABLE_AVX&#x3D;ON -DENABLE_AVX&#x3D;ON -A x64  ..<br>1）去掉-A X64，就会编译x86架构<br>2) 会生成visual studio工程，然后用IDE编译或者通过命令行触发编译即可</p>]]>
+    </content>
+    <id>https://feibuguocanghai.github.io/2023/10/11/fftw%E7%BC%96%E8%AF%91/</id>
+    <link href="https://feibuguocanghai.github.io/2023/10/11/fftw%E7%BC%96%E8%AF%91/"/>
+    <published>2023-10-11T09:11:33.000Z</published>
+    <summary>
+      <![CDATA[<p>fftw 3.3.10版本，目前支持cmake编译</p>
+<p>windows编译过程如下<br>mkdir build<br>cd build<br>cmake -DBUILD_SHARED_LIBS&#x3D;OFF -DBUILD_TESTS&#x3D;OFF -D]]>
+    </summary>
+    <title>fftw编译</title>
+    <updated>2024-10-22T14:43:30.512Z</updated>
+  </entry>
+</feed>
