@@ -180,7 +180,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://feibuguocanghai.github.io/2026/10/31/ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%97%B6%E9%97%B4%E5%B7%AE8%E5%B0%8F%E6%97%B6/" data-id="cmwhhroou000c08x55aitdv65" data-title="Ubuntu 虚拟机时间比主机差 8 小时：时区与 NTP 排查" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://feibuguocanghai.github.io/2026/10/31/ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%97%B6%E9%97%B4%E5%B7%AE8%E5%B0%8F%E6%97%B6/" data-id="cmwhi4sw5000g20x59wrk5tmz" data-title="Ubuntu 虚拟机时间比主机差 8 小时：时区与 NTP 排查" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -251,7 +251,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://feibuguocanghai.github.io/2026/09/11/ponytail-%E8%AE%A9AI%E7%BC%96%E7%A0%81Agent%E5%B0%91%E5%86%99%E4%BB%A3%E7%A0%81/" data-id="cmwhhroos000808x5dy3w39gp" data-title="Ponytail：让 AI 编码 Agent 少写代码的规则集" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://feibuguocanghai.github.io/2026/09/11/ponytail-%E8%AE%A9AI%E7%BC%96%E7%A0%81Agent%E5%B0%91%E5%86%99%E4%BB%A3%E7%A0%81/" data-id="cmwhi4sw5000f20x5hdulaqff" data-title="Ponytail：让 AI 编码 Agent 少写代码的规则集" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -330,19 +330,6 @@
 <li><strong>删完复查</strong>：再跑一次 <code>conda env list</code>，确认 C 盘的已消失、D 盘的还在</li>
 <li><strong>别碰 base</strong>：<code>C:\Users\&lt;用户名&gt;\AppData\Local\miniforge-pypy3</code> 是基础环境，删了 conda 直接报废</li>
 </ul>
-<h2 id="迁移之后，label-studio-起不来了"><a href="#迁移之后，label-studio-起不来了" class="headerlink" title="迁移之后，label-studio 起不来了"></a>迁移之后，label-studio 起不来了</h2><p>这是迁移最常见的后遗症：<code>label-studio.exe</code> 只是个<strong>启动器</strong>，内部硬编码了旧的 Python 解释器路径，环境一挪，路径就失效了。</p>
-<p>不用重装，两种修法。</p>
-<h3 id="方法一：绕开启动器，直接用模块启动"><a href="#方法一：绕开启动器，直接用模块启动" class="headerlink" title="方法一：绕开启动器，直接用模块启动"></a>方法一：绕开启动器，直接用模块启动</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m label_studio.server</span><br></pre></td></tr></table></figure>
-
-<p>能正常跑起来，就说明包本身完好，坏的只是那个 exe。适合先应急。</p>
-<h3 id="方法二：重建启动器（一劳永逸）"><a href="#方法二：重建启动器（一劳永逸）" class="headerlink" title="方法二：重建启动器（一劳永逸）"></a>方法二：重建启动器（一劳永逸）</h3><p>在当前环境里执行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install --force-reinstall --no-deps label-studio</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><code>--force-reinstall</code>：强制重装，触发启动器重新生成</li>
-<li><code>--no-deps</code>：<strong>不重装依赖</strong>，只重建入口脚本，速度快而且不会搅乱现有依赖关系</li>
-</ul>
-<p>之后 <code>label-studio</code> 就恢复正常了。</p>
 <h2 id="更稳妥的迁移方式：conda-pack"><a href="#更稳妥的迁移方式：conda-pack" class="headerlink" title="更稳妥的迁移方式：conda-pack"></a>更稳妥的迁移方式：conda-pack</h2><p>如果还要再迁环境，用 <code>conda-pack</code> 打包，它会自动处理硬编码路径的问题：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在旧环境中打包</span></span><br><span class="line">conda pack -n tf2 -o tf2.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在新位置解压并激活</span></span><br><span class="line"><span class="built_in">mkdir</span> D:\conda_envs\tf2</span><br><span class="line">tar -xzf tf2.tar.gz -C D:\conda_envs\tf2</span><br><span class="line">conda activate D:\conda_envs\tf2</span><br><span class="line">conda-unpack  <span class="comment"># 自动修复所有路径</span></span><br></pre></td></tr></table></figure>
 
@@ -351,7 +338,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://feibuguocanghai.github.io/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" data-id="cmwhhroop000308x57b2ieah0" data-title="conda 环境迁移到 D 盘与常见问题" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://feibuguocanghai.github.io/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" data-id="cmwhi4svz000420x58lx88u1b" data-title="conda 环境迁移到 D 盘与常见问题" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -396,7 +383,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://feibuguocanghai.github.io/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/" data-id="cmwhhroos000908x5f2x05pfb" data-title="hexo 部署到github pages关键步骤" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://feibuguocanghai.github.io/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/" data-id="cmwhi4sw0000520x57x11b5hy" data-title="hexo 部署到github pages关键步骤" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -445,7 +432,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://feibuguocanghai.github.io/2023/10/11/gcc%E5%A4%9A%E7%89%88%E6%9C%AC%E5%88%87%E6%8D%A2/" data-id="cmwhhroor000708x5gmboe3un" data-title="gcc多版本切换" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://feibuguocanghai.github.io/2023/10/11/gcc%E5%A4%9A%E7%89%88%E6%9C%AC%E5%88%87%E6%8D%A2/" data-id="cmwhi4sw4000e20x5huj5f7is" data-title="gcc多版本切换" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
@@ -485,7 +472,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://feibuguocanghai.github.io/2023/10/11/fftw%E7%BC%96%E8%AF%91/" data-id="cmwhhrooq000408x55j11ewqw" data-title="fftw编译" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://feibuguocanghai.github.io/2023/10/11/fftw%E7%BC%96%E8%AF%91/" data-id="cmwhi4svy000320x5fivfhn98" data-title="fftw编译" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
