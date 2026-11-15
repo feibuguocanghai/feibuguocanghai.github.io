@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>Ubuntu 虚拟机时间比主机差 8 小时：时区与 NTP 排查</title>
+    <link href="/2026/10/31/ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%97%B6%E9%97%B4%E5%B7%AE8%E5%B0%8F%E6%97%B6/"/>
+    <url>/2026/10/31/ubuntu%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%97%B6%E9%97%B4%E5%B7%AE8%E5%B0%8F%E6%97%B6/</url>
+    
+    <content type="html"><![CDATA[<p>虚拟机里的 Ubuntu 时间与主机正好差 8 小时，这是个很经典的问题。它通常不是「时间不准」，而是<strong>时区配置不一致</strong>加上<strong>同步服务没开</strong>。</p><h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><ol><li><strong>时区差异（最常见）</strong>：主机用的是 <code>Asia/Shanghai</code>（UTC+8），而虚拟机装机时往往默认 <code>UTC</code>，两者正好差 8 小时。</li><li><strong>硬件时钟解读方式不同</strong>：Linux 默认把硬件时钟（RTC）当作 UTC，Windows 主机通常当作本地时间。虚拟机启动时从主机同步了 RTC，Ubuntu 却按 UTC 解读，偏差就出来了。</li><li><strong>时间同步服务未启用</strong>：虚拟机长时间运行后，CPU 调度会让时钟漂移，没有 NTP&#x2F;Chrony 校准，时间会越走越偏。</li></ol><h2 id="纠正步骤"><a href="#纠正步骤" class="headerlink" title="纠正步骤"></a>纠正步骤</h2><p>按顺序在 Ubuntu 终端里操作。</p><h3 id="1-检查当前时间和时区"><a href="#1-检查当前时间和时区" class="headerlink" title="1. 检查当前时间和时区"></a>1. 检查当前时间和时区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">timedatectl status<br></code></pre></td></tr></table></figure><p>重点看输出里的 <code>Time zone</code> 和 <code>RTC time</code>。如果 Time zone 是 <code>UTC</code> 或 <code>Etc/UTC</code>，问题就出在这里。</p><h3 id="2-设置正确的时区"><a href="#2-设置正确的时区" class="headerlink" title="2. 设置正确的时区"></a>2. 设置正确的时区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> timedatectl set-timezone Asia/Shanghai<br></code></pre></td></tr></table></figure><h3 id="3-确保时间同步服务已开启"><a href="#3-确保时间同步服务已开启" class="headerlink" title="3. 确保时间同步服务已开启"></a>3. 确保时间同步服务已开启</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 启用并启动 systemd-timesyncd（Ubuntu 自带的轻量级 NTP 客户端）</span><br><span class="hljs-built_in">sudo</span> timedatectl set-ntp <span class="hljs-literal">true</span><br><br><span class="hljs-comment"># 如果提示服务不存在，可手动启动</span><br><span class="hljs-built_in">sudo</span> systemctl <span class="hljs-built_in">enable</span> --now systemd-timesyncd<br></code></pre></td></tr></table></figure><h3 id="4-处理硬件时钟（RTC）"><a href="#4-处理硬件时钟（RTC）" class="headerlink" title="4. 处理硬件时钟（RTC）"></a>4. 处理硬件时钟（RTC）</h3><p>改完时区时间仍然不对，或者重启后又变回差 8 小时，说明系统对 RTC 的理解有误，需要告诉它「硬件时钟存的是 UTC」：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> timedatectl set-local-rtc 0<br></code></pre></td></tr></table></figure><blockquote><p><code>set-local-rtc 0</code> 表示 RTC 是 UTC（推荐）。宿主机是 Windows 且双系统的特殊环境下可能要设为 <code>1</code>，但在纯虚拟机里<strong>强烈建议保持为 0</strong>。</p></blockquote><h3 id="5-强制立即同步"><a href="#5-强制立即同步" class="headerlink" title="5. 强制立即同步"></a>5. 强制立即同步</h3><p>不想等自动同步，可以手动触发：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> chronyc makestep          <span class="hljs-comment"># 如果安装了 chrony</span><br><span class="hljs-comment"># 或者</span><br><span class="hljs-built_in">sudo</span> sntp -s pool.ntp.org      <span class="hljs-comment"># 用 sntp 强制同步</span><br></code></pre></td></tr></table></figure><h3 id="6-验证修复结果"><a href="#6-验证修复结果" class="headerlink" title="6. 验证修复结果"></a>6. 验证修复结果</h3><p>再跑一次 <code>timedatectl status</code>，确认三项：</p><ul><li><code>Time zone: Asia/Shanghai (CST, +0800)</code></li><li><code>System clock synchronized: yes</code></li><li><code>NTP service: active</code></li></ul><h2 id="虚拟机的额外建议"><a href="#虚拟机的额外建议" class="headerlink" title="虚拟机的额外建议"></a>虚拟机的额外建议</h2><table><thead><tr><th>虚拟化平台</th><th>推荐操作</th></tr></thead><tbody><tr><td>VMware</td><td>安装 <code>open-vm-tools</code>，内含专门的时间同步模块：<code>sudo apt install open-vm-tools</code></td></tr><tr><td>VirtualBox</td><td>安装 Guest Additions 后，勾选「同步客户机时间」</td></tr><tr><td>Hyper-V</td><td>安装 <code>linux-tools-virtual</code> 和 <code>hyperv-daemons</code></td></tr><tr><td>KVM&#x2F;QEMU</td><td>确保宿主机时间准确，Guest 内用 <code>chrony</code> 即可</td></tr></tbody></table><blockquote><p><strong>最佳实践</strong>：虚拟机内的时间同步应优先依赖<strong>虚拟化平台提供的工具</strong>（如 VMware Tools），其次才是 NTP。平台工具能感知 VM 的暂停&#x2F;恢复事件，避免恢复后出现巨大的时间跳变。</p></blockquote><h2 id="补记：有时一行-set-ntp-true-就够了"><a href="#补记：有时一行-set-ntp-true-就够了" class="headerlink" title="补记：有时一行 set-ntp true 就够了"></a>补记：有时一行 <code>set-ntp true</code> 就够了</h2><p>后来遇到一次，<code>sudo timedatectl set-ntp true</code> 直接解决了问题。这种情况说明时区本身是对的（已经是 <code>Asia/Shanghai</code>），纯粹是 <strong>NTP 同步服务之前处于关闭状态</strong>。</p><p>为什么这行命令有效：</p><ul><li>虚拟机受 CPU 调度、挂起&#x2F;恢复影响，硬件时钟漂移比物理机快得多</li><li>NTP 服务被禁用时，系统只能依赖这个不稳的虚拟硬件时钟，时间很快偏离</li><li><code>set-ntp true</code> 重新拉起 <code>systemd-timesyncd</code>，它会立即向 NTP 服务器请求准确时间并完成校准</li></ul><h3 id="防止重启后复发"><a href="#防止重启后复发" class="headerlink" title="防止重启后复发"></a>防止重启后复发</h3><p><strong>1. 确认服务开机自启</strong></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">systemctl is-enabled systemd-timesyncd<br><span class="hljs-comment"># 输出应为 &quot;enabled&quot;</span><br></code></pre></td></tr></table></figure><p>如果输出 <code>disabled</code>：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> systemctl <span class="hljs-built_in">enable</span> systemd-timesyncd<br></code></pre></td></tr></table></figure><p><strong>2. 检查虚拟化增强工具是否安装</strong></p><p>NTP 网络同步总有延迟，虚拟机的最佳实践是装平台专属工具，实现<strong>宿主机 → 虚拟机</strong>的直接时间传递：</p><ul><li>VMware：<code>sudo apt install open-vm-tools</code></li><li>VirtualBox：安装 Guest Additions</li><li>Hyper-V：<code>sudo apt install hyperv-daemons</code></li></ul><p>这些工具能在虚拟机从「暂停 &#x2F; 快照恢复」的瞬间完成时间修正，比纯 NTP 响应更快、更可靠。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>Linux</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Linux</tag>
+      
+      <tag>Ubuntu</tag>
+      
+      <tag>时间同步</tag>
+      
+      <tag>虚拟机</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>阿基里斯与乌龟：无穷级数怎么破解芝诺悖论</title>
+    <link href="/2026/10/05/%E9%98%BF%E5%9F%BA%E9%87%8C%E6%96%AF%E4%B8%8E%E4%B9%8C%E9%BE%9F-%E8%8A%9D%E8%AF%BA%E6%82%96%E8%AE%BA/"/>
+    <url>/2026/10/05/%E9%98%BF%E5%9F%BA%E9%87%8C%E6%96%AF%E4%B8%8E%E4%B9%8C%E9%BE%9F-%E8%8A%9D%E8%AF%BA%E6%82%96%E8%AE%BA/</url>
+    
+    <content type="html"><![CDATA[<p>「阿基里斯与乌龟」是古希腊哲学家<strong>芝诺</strong>提出的著名悖论：跑得最快的人追不上一只先出发的乌龟。它靠无限分割把一场必然的追赶说成永远追不上，而破解它的关键，是承认一个我们默认接受的错误前提——「无穷多步」不等于「无穷多时间」。</p><h2 id="悖论的描述"><a href="#悖论的描述" class="headerlink" title="悖论的描述"></a>悖论的描述</h2><p>假设：</p><ul><li>乌龟在兔子前面 10 米</li><li>兔子速度比乌龟快</li></ul><p>芝诺的推理是这样的：</p><ol><li>兔子要先跑到乌龟<strong>当前</strong>的位置（10 米处），但在这段时间里，乌龟又往前爬了一小段。</li><li>兔子再跑到乌龟<strong>新的</strong>位置，但乌龟又往前挪了一点。</li><li>如此无限循环……兔子似乎<strong>永远追不上</strong>乌龟。</li></ol><p>表面上看，每一步都有一个「微小差距」，步骤无穷多，所以兔子永远追不上？</p><h2 id="关键错误：无穷多步-≠-无穷多时间"><a href="#关键错误：无穷多步-≠-无穷多时间" class="headerlink" title="关键错误：无穷多步 ≠ 无穷多时间"></a>关键错误：无穷多步 ≠ 无穷多时间</h2><p>这个悖论的陷阱在于一个隐含的假设：</p><blockquote><p><strong>「无穷多个步骤」等于「需要无穷多的时间」</strong></p></blockquote><p>这个假设是错的。步骤可以无限细分，但每一步花的时间也在同步变小。</p><h2 id="用数学来破解"><a href="#用数学来破解" class="headerlink" title="用数学来破解"></a>用数学来破解</h2><p>举个具体例子：</p><ul><li>兔子速度：10 m&#x2F;s</li><li>乌龟速度：1 m&#x2F;s</li><li>初始距离：10 米</li></ul><p>按芝诺的分段法：</p><table><thead><tr><th>阶段</th><th>兔子追赶的距离</th><th>所需时间</th></tr></thead><tbody><tr><td>第 1 段</td><td>10 米</td><td>1 秒</td></tr><tr><td>第 2 段</td><td>1 米</td><td>0.1 秒</td></tr><tr><td>第 3 段</td><td>0.1 米</td><td>0.01 秒</td></tr><tr><td>第 4 段</td><td>0.01 米</td><td>0.001 秒</td></tr><tr><td>…</td><td>…</td><td>…</td></tr></tbody></table><p>把每段时间加起来：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">总时间 = 1 + 0.1 + 0.01 + 0.001 + ⋯<br><br>这是一个无穷等比级数，首项 a = 1，公比 r = 0.1：<br><br>S = a / (1 - r) = 1 / (1 - 0.1) = 1 / 0.9 ≈ 1.111 秒<br></code></pre></td></tr></table></figure><p><strong>无穷多个步骤，但总时间是有限的。</strong> 大约 1.11 秒后，兔子就追上乌龟了——而芝诺描述的「无限个瞬间」全部挤在这 1.11 秒里。</p><h2 id="本质总结"><a href="#本质总结" class="headerlink" title="本质总结"></a>本质总结</h2><table><thead><tr><th>误解</th><th>真相</th></tr></thead><tbody><tr><td>无穷多步 &#x3D; 无穷多时间</td><td>无穷多步可以收敛到一个<strong>有限值</strong></td></tr><tr><td>每次都有差距，所以追不上</td><td>差距在<strong>趋近于零</strong>，总和是有限的</td></tr><tr><td>空间和时间可以无限分割，所以运动不可能</td><td>无限分割是数学工具，不代表物理上「走不完」</td></tr></tbody></table><h2 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a>一句话总结</h2><blockquote><p>芝诺悖论的「魔力」在于把一段<strong>有限的路程</strong>人为拆成<strong>无穷多小段</strong>，让人误以为「无穷多步就永远走不完」。但无穷小量加在一起，完全可以等于一个有限的数——这正是微积分中「极限」和「无穷级数收敛」的核心思想。</p></blockquote><p>所以现实中兔子当然能轻松超过乌龟，数学也完全支持这一点。</p><p>芝诺还提过「飞矢不动」等类似悖论，用的同样是无限分割否定运动，破法也走同一条路：分割的无限性不构成结果上的无限。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>数学</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>数学</tag>
+      
+      <tag>芝诺悖论</tag>
+      
+      <tag>无穷级数</tag>
+      
+      <tag>微积分</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Ponytail：让 AI 编码 Agent 少写代码的规则集</title>
+    <link href="/2026/09/11/ponytail-%E8%AE%A9AI%E7%BC%96%E7%A0%81Agent%E5%B0%91%E5%86%99%E4%BB%A3%E7%A0%81/"/>
+    <url>/2026/09/11/ponytail-%E8%AE%A9AI%E7%BC%96%E7%A0%81Agent%E5%B0%91%E5%86%99%E4%BB%A3%E7%A0%81/</url>
+    
+    <content type="html"><![CDATA[<p>AI 编码 Agent 的通病是写得太多：一个能改三行的需求，它能给你加一个抽象层。Ponytail 反过来，它是一套让 Agent「少写代码」的规则集，核心是一条决策阶梯——动笔之前先想清楚：这东西真的需要吗？代码库里有没有现成的？标准库或平台原生能力能不能解决？最后才写最小可用实现。</p><p>Qoder 可以直接使用 Ponytail，而且支持得比较完整。</p><h2 id="安装方式"><a href="#安装方式" class="headerlink" title="安装方式"></a>安装方式</h2><p>Qoder 有两种接入方式，都很简单。</p><p><strong>规则文件（零安装）</strong></p><p>把 Ponytail 仓库里的 <code>.qoder/rules/ponytail.md</code> 复制到项目的 <code>.qoder/rules/</code> 目录下，Qoder 会自动加载。这属于「指令层」接入，不需要额外装插件。</p><p><strong>完整插件支持</strong></p><p>想启用自动模式激活、每轮注入规则集这些完整能力，就把 <code>hooks/qoder-hooks.json</code> 里的钩子配置加到 <code>.qoder/settings.json</code>，并填好 <code>ponytail_dir</code> 指向 Ponytail 的本地仓库。这样 Qoder 会在每次对话开始时自动注入规则，子 Agent 也会被注入。</p><p>另外，如果直接在 Ponytail 的 git checkout 里用 Qoder，它会自动读取仓库根目录的 <code>AGENTS.md</code>，等于零配置生效。</p><h2 id="四档强度"><a href="#四档强度" class="headerlink" title="四档强度"></a>四档强度</h2><p>Ponytail 有四档强度，在 Qoder 里通过斜杠命令随时切换：</p><ul><li><code>/ponytail lite</code>：按你的要求实现，但会顺手指出更懒的替代方案</li><li><code>/ponytail full</code>：默认模式，严格执行决策阶梯，标准库和原生能力优先</li><li><code>/ponytail ultra</code>：极端 YAGNI，先删再加，适合清理严重过度构建的代码库</li><li><code>/ponytail off</code> 或 <code>normal mode</code>：临时关闭</li></ul><p>默认启动就是 <code>full</code> 模式，也可以用 <code>PONYTAIL_DEFAULT_MODE</code> 环境变量或 <code>~/.config/ponytail/config.json</code> 修改默认值。</p><h2 id="配套命令"><a href="#配套命令" class="headerlink" title="配套命令"></a>配套命令</h2><p>Qoder 的 skill 系统还能直接用 Ponytail 的六个辅助技能，其中只有第一个会真正改代码：</p><ul><li><code>/ponytail</code>：主技能，切换强度模式</li><li><code>/ponytail-review</code>：审查当前 diff 的过度工程，输出删除清单</li><li><code>/ponytail-audit</code>：审查整个仓库的复杂度</li><li><code>/ponytail-debt</code>：收拢 <code>ponytail:</code> 注释，形成技术债清单</li><li><code>/ponytail-gain</code>：展示收益记分牌（少写多少代码、省多少钱、快多少）</li><li><code>/ponytail-help</code>：命令速查</li></ul><h2 id="红线"><a href="#红线" class="headerlink" title="红线"></a>红线</h2><p>Ponytail 的「懒」有明确边界：信任边界校验、防数据丢失、安全措施、无障碍基础，这些绝对不能为了省代码而删。</p><p>另外，完整插件模式需要 Qoder 环境支持 Node.js 钩子，规则文件模式则不需要。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>AI 编程</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Ponytail</tag>
+      
+      <tag>Qoder</tag>
+      
+      <tag>AI 编程</tag>
+      
+      <tag>提示工程</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>英文与中文知识库体量对比</title>
+    <link href="/2026/08/15/%E8%8B%B1%E6%96%87%E4%B8%8E%E4%B8%AD%E6%96%87%E7%9F%A5%E8%AF%86%E5%BA%93%E4%BD%93%E9%87%8F%E5%AF%B9%E6%AF%94/"/>
+    <url>/2026/08/15/%E8%8B%B1%E6%96%87%E4%B8%8E%E4%B8%AD%E6%96%87%E7%9F%A5%E8%AF%86%E5%BA%93%E4%BD%93%E9%87%8F%E5%AF%B9%E6%AF%94/</url>
+    
+    <content type="html"><![CDATA[<p>关于中文互联网的内容密度，讨论很多，但「多」和「少」凭感觉很难判断。把几个能查到的量化维度摆在一起，至少能看出量级上的差距。</p><table><thead><tr><th>对比维度</th><th>欧美英文核心数据</th><th>中文核心数据</th></tr></thead><tbody><tr><td>维基百科词条数</td><td>722 万+</td><td>155 万+</td></tr><tr><td>年新书出版量</td><td>欧美合计年新书超 45 万种</td><td>中国年新书超 22 万种</td></tr><tr><td>国际科技论文总量</td><td>欧美十年累计超 1200 万篇</td><td>中国十年累计 498 万篇</td></tr><tr><td>学术期刊总量</td><td>欧美 SCI&#x2F;SSCI&#x2F;AHCI 期刊超 1.4 万种</td><td>中国大陆科技期刊共 5325 种</td></tr><tr><td>年度新歌上线量</td><td>欧美年新增 ISRC 编码歌曲超 4000 万首</td><td>中国年新增上线歌曲约 500 万首</td></tr><tr><td>年度 PCT 专利申请量</td><td>欧美合计约 11 万件</td><td>中国 2025 年 PCT 申请 7.86 万件</td></tr></tbody></table><h2 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h2><ul><li><strong>期刊维度</strong>：2026 年 1 月科睿唯安更新的目录中，SCIE、SSCI、AHCI 三类英文期刊合计超 1.4 万本；中国大陆同期科技期刊总量为 5325 种，其中英文刊仅 531 种。</li><li><strong>歌曲维度</strong>：2025 年全球新增 ISRC 编码新歌超 5120 万首，欧美产出占比超 78%；中文新歌年上线量约 500 万首，约为欧美英文新歌总量的 1&#x2F;8。</li><li><strong>专利维度</strong>：2025 年全球 PCT 申请量约 27.59 万件，欧美合计约 11 万件；中国以 7.86 万件单国申请量位居全球第一，但欧美英文区域整体占全球总量 40% 以上。</li></ul><h2 id="怎么读这组数字"><a href="#怎么读这组数字" class="headerlink" title="怎么读这组数字"></a>怎么读这组数字</h2><p>按同一维度做除法，中文体量大致落在英文的 <strong>1&#x2F;8 到 7&#x2F;10</strong> 之间：维基词条约 1&#x2F;5，年新书约 1&#x2F;2，科技论文约 2&#x2F;5，期刊约 2&#x2F;5，新歌约 1&#x2F;8，PCT 申请约 7&#x2F;10。差距最大的在「按语言划分的内容生产」（歌曲、百科），最接近的在「按国别统计的专利」。</p><p>但要注意两列的口径并不对等：一边是「欧美合计」，一边是「中国单国」，而且语言人口、出版许可制度、平台生态都不同。所以这些数字适合用来看<strong>量级差异</strong>，不适合当成精确的语言优劣判断，更不适合相加折算成一个「知识总量」。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>杂记</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>数据对比</tag>
+      
+      <tag>知识库</tag>
+      
+      <tag>中文互联网</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>conda 环境迁移到 D 盘与常见问题</title>
+    <link href="/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/"/>
+    <url>/2026/08/15/conda%E7%8E%AF%E5%A2%83%E8%BF%81%E7%A7%BB%E5%88%B0D%E7%9B%98%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/</url>
+    
+    <content type="html"><![CDATA[<p>系统盘空间不足，第一个想到的元凶通常是 conda 环境：一个环境动辄几个 GB，而且默认全堆在用户目录下。下面记录一次把环境从 C 盘迁到 D 盘的完整过程，以及迁移之后遇到的启动器失效问题。</p><h2 id="第一步：查看当前环境"><a href="#第一步：查看当前环境" class="headerlink" title="第一步：查看当前环境"></a>第一步：查看当前环境</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">conda <span class="hljs-built_in">env</span> list<br></code></pre></td></tr></table></figure><p>这会列出所有虚拟环境及其对应的目录，先确认哪些在 C 盘、各自占多大空间。</p><h2 id="第二步：迁移现有环境"><a href="#第二步：迁移现有环境" class="headerlink" title="第二步：迁移现有环境"></a>第二步：迁移现有环境</h2><p>推荐用<strong>克隆</strong>而不是直接挪文件夹。环境里有大量写死的绝对路径（激活脚本、入口脚本、编译产物），直接剪切过去十有八九跑不起来，而 <code>--clone</code> 会在新路径下重建一份完整环境。</p><p>假设要迁移的环境名为 <code>myenv</code>，把它克隆到 D 盘：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">conda create --prefix D:\conda_envs\myenv --<span class="hljs-built_in">clone</span> myenv<br></code></pre></td></tr></table></figure><p>确认新环境能正常激活、包也都齐全之后，再删掉 C 盘上的旧环境释放空间：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">conda remove --name myenv --all<br></code></pre></td></tr></table></figure><h2 id="第三步：改掉默认路径"><a href="#第三步：改掉默认路径" class="headerlink" title="第三步：改掉默认路径"></a>第三步：改掉默认路径</h2><p>不改配置的话，下次 <code>conda create</code> 还是会把环境建回 C 盘。</p><p><strong>方法一：命令行</strong></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">conda config --add envs_dirs D:\conda_envs<br></code></pre></td></tr></table></figure><p><strong>方法二：直接改配置文件</strong></p><p>编辑 <code>~/.condarc</code>（Windows 下通常是 <code>C:\Users\&lt;用户名&gt;\.condarc</code>），写入：</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">envs_dirs:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">D:\conda_envs</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">C:\Users\&lt;用户名&gt;\.conda\envs</span><br></code></pre></td></tr></table></figure><p>conda 会按顺序优先在 <code>D:\conda_envs</code> 下创建新环境，找不到再回退到原路径。</p><h2 id="第四步：验证"><a href="#第四步：验证" class="headerlink" title="第四步：验证"></a>第四步：验证</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">conda activate D:\conda_envs\myenv<br>python -c <span class="hljs-string">&quot;import sys; print(sys.executable)&quot;</span><br></code></pre></td></tr></table></figure><p>输出指向 D 盘就说明迁移成功。</p><blockquote><p><strong>两个提醒</strong></p><ul><li>迁移前如果环境很重要，先导出一份配置做备份：<code>conda env export -n myenv &gt; myenv.yml</code></li><li>目标文件夹不存在时 conda 一般会自动创建，但提前手动建好更稳妥</li></ul></blockquote><h2 id="删除同名环境时，别用-name"><a href="#删除同名环境时，别用-name" class="headerlink" title="删除同名环境时，别用 --name"></a>删除同名环境时，别用 <code>--name</code></h2><p>当 C 盘和 D 盘存在同名环境时，<code>--name</code> 只会匹配到第一个找到的，很容易删错。用 <code>--prefix</code> 指定完整路径才能精确删除：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">conda remove --prefix C:\Users\&lt;用户名&gt;\AppData\Local\miniforge-pypy3\envs\markitdown --all<br></code></pre></td></tr></table></figure><p>几点注意：</p><ul><li><strong>核对路径</strong>：粘贴命令前再看一眼，确认是 C 盘那个，别把 D 盘的新环境删了</li><li><strong>删完复查</strong>：再跑一次 <code>conda env list</code>，确认 C 盘的已消失、D 盘的还在</li><li><strong>别碰 base</strong>：<code>C:\Users\&lt;用户名&gt;\AppData\Local\miniforge-pypy3</code> 是基础环境，删了 conda 直接报废</li></ul><h2 id="更稳妥的迁移方式：conda-pack"><a href="#更稳妥的迁移方式：conda-pack" class="headerlink" title="更稳妥的迁移方式：conda-pack"></a>更稳妥的迁移方式：conda-pack</h2><p>如果还要再迁环境，用 <code>conda-pack</code> 打包，它会自动处理硬编码路径的问题：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 在旧环境中打包</span><br>conda pack -n tf2 -o tf2.tar.gz<br><br><span class="hljs-comment"># 在新位置解压并激活</span><br><span class="hljs-built_in">mkdir</span> D:\conda_envs\tf2<br>tar -xzf tf2.tar.gz -C D:\conda_envs\tf2<br>conda activate D:\conda_envs\tf2<br>conda-unpack  <span class="hljs-comment"># 自动修复所有路径</span><br></code></pre></td></tr></table></figure><p>建议流程：先用方法一确认能否启动，没问题后再用方法二修启动器，下次迁移直接上 <code>conda-pack</code>。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>工具链</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>conda</tag>
+      
+      <tag>Python</tag>
+      
+      <tag>环境管理</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>hexo 部署到github pages关键步骤</title>
+    <link href="/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/"/>
+    <url>/2023/10/12/hexo-%E9%83%A8%E7%BD%B2%E5%88%B0github-pages%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4/</url>
+    
+    <content type="html"><![CDATA[<p>1.hexo工程文件，博客内容的markdown文件，需要保存在一个分支。而生成的静态网站，需要存放在另外分支。<br>2.生成的静态网站并且发布到另外一个分支，可以通过hexo的插件完成。</p><p>步骤1：<br>修改_config.yml文件，在最后加入以下配置：<br>  deploy:<br>    type: git<br>    repository: <a href="https://github.com/username/username.github.io">https://github.com/username/username.github.io</a><br>    branch: main</p><p>需要注意的发布分支bran需要和归档分支不同，发布分支需要和git仓pages设置中的分支一致</p><p>步骤2：<br>安装<br>npm install hexo-deployer-git –save</p><p>步骤3:<br>生成和发布<br>hexo clean<br>hexo g<br>hexo d</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>博客搭建</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Hexo</tag>
+      
+      <tag>GitHub Pages</tag>
+      
+      <tag>部署</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>gcc多版本切换</title>
+    <link href="/2023/10/11/gcc%E5%A4%9A%E7%89%88%E6%9C%AC%E5%88%87%E6%8D%A2/"/>
+    <url>/2023/10/11/gcc%E5%A4%9A%E7%89%88%E6%9C%AC%E5%88%87%E6%8D%A2/</url>
+    
+    <content type="html"><![CDATA[<p>执行以下命令 </p><p>  sudo apt install build-essential<br>  $ sudo apt -y install gcc-7 g++-7 gcc-8 g++-8 gcc-9 g++-9 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;gcc gcc &#x2F;usr&#x2F;bin&#x2F;gcc-7 7 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;g++ g++ &#x2F;usr&#x2F;bin&#x2F;g++-7 7 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;gcc gcc &#x2F;usr&#x2F;bin&#x2F;gcc-8 8 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;g++ g++ &#x2F;usr&#x2F;bin&#x2F;g++-8 8 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;gcc gcc &#x2F;usr&#x2F;bin&#x2F;gcc-9 9 </p><p>  sudo update-alternatives –install &#x2F;usr&#x2F;bin&#x2F;g++ g++ &#x2F;usr&#x2F;bin&#x2F;g++-9 9 </p><p>$ sudo update-alternatives –config gcc<br>There are 3 choices for the alternative gcc (providing &#x2F;usr&#x2F;bin&#x2F;gcc).<br>Selection    Path            Priority   Status————————————————————<br>0            &#x2F;usr&#x2F;bin&#x2F;gcc-9   9         auto mode<br>1            &#x2F;usr&#x2F;bin&#x2F;gcc-7   7         manual mode*<br>2            &#x2F;usr&#x2F;bin&#x2F;gcc-8   8         manual mode<br>3            &#x2F;usr&#x2F;bin&#x2F;gcc-9   9         manual mode<br>Press  to keep the current choice[*], or type selection number: </p><p>$ sudo update-alternatives –config g++<br>There are 3 choices for the alternative g++ (providing &#x2F;usr&#x2F;bin&#x2F;g++).<br> Selection    Path            Priority   Status————————————————————*<br>0            &#x2F;usr&#x2F;bin&#x2F;g++-9   9         auto mode<br>1            &#x2F;usr&#x2F;bin&#x2F;g++-7   7         manual mode<br>2            &#x2F;usr&#x2F;bin&#x2F;g++-8   8         manual mode<br>3            &#x2F;usr&#x2F;bin&#x2F;g++-9   9         manual mode<br>Press  to keep the current choice[*], or type selection number:</p><p>$ gcc –version<br>$ g++ –version</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>工具链</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>gcc</tag>
+      
+      <tag>Linux</tag>
+      
+      <tag>update-alternatives</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>fftw编译</title>
+    <link href="/2023/10/11/fftw%E7%BC%96%E8%AF%91/"/>
+    <url>/2023/10/11/fftw%E7%BC%96%E8%AF%91/</url>
+    
+    <content type="html"><![CDATA[<p>fftw 3.3.10版本，目前支持cmake编译</p><p>windows编译过程如下<br>mkdir build<br>cd build<br>cmake -DBUILD_SHARED_LIBS&#x3D;OFF -DBUILD_TESTS&#x3D;OFF -DENABLE_FLOAT&#x3D;ON -DENABLE_SSE&#x3D;ON -DENABLE_SSE2&#x3D;ON -DENABLE_AVX&#x3D;ON -DENABLE_AVX&#x3D;ON -A x64  ..<br>1）去掉-A X64，就会编译x86架构<br>2) 会生成visual studio工程，然后用IDE编译或者通过命令行触发编译即可</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>编译</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>FFTW</tag>
+      
+      <tag>CMake</tag>
+      
+      <tag>Windows</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  
+</search>

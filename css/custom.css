@@ -1,0 +1,150 @@
+/* ---------------------------------------------------------------
+ * 自定义样式：在 Fluid 默认基础上做少量克制调整
+ * 颜色全部引用主题 CSS 变量，因此亮色 / 暗色模式都会自动适配
+ * --------------------------------------------------------------- */
+
+/* 主板块：轻圆角 + 极浅投影，比硬边白块柔和 */
+#board {
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 10px 28px rgba(16, 24, 40, .05);
+}
+
+/* 暗色投影：手动切换（属性）与跟随系统（媒体查询）两种情况都要覆盖 */
+[data-user-color-scheme="dark"] #board {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 28px rgba(0, 0, 0, .35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-user-color-scheme]) #board {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 28px rgba(0, 0, 0, .35);
+  }
+}
+
+/* ---------------- 正文排版 ---------------- */
+
+.markdown-body {
+  font-size: 1.02rem;
+  line-height: 1.82;
+  letter-spacing: .012em;
+}
+
+.markdown-body p {
+  margin-bottom: 1.05rem;
+}
+
+/* 二级标题加一道分隔线，长文里更容易扫读 */
+.markdown-body h2 {
+  padding-bottom: .35rem;
+  margin-top: 2.2rem;
+  border-bottom: 1px solid var(--line-color);
+}
+
+.markdown-body h3 {
+  margin-top: 1.8rem;
+}
+
+.markdown-body h4 {
+  margin-top: 1.4rem;
+  color: var(--sec-text-color);
+}
+
+/* 引用块：细竖线 + 淡背景，不用大色块 */
+.markdown-body blockquote {
+  padding: .7rem 1rem;
+  border-left: 3px solid var(--post-link-color);
+  background: rgba(43, 108, 176, .04);
+  border-radius: 0 6px 6px 0;
+  color: var(--text-color);
+}
+
+[data-user-color-scheme="dark"] .markdown-body blockquote {
+  background: rgba(94, 168, 232, .08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-user-color-scheme]) .markdown-body blockquote {
+    background: rgba(94, 168, 232, .08);
+  }
+}
+
+.markdown-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------- 代码 ---------------- */
+
+figure.highlight,
+.code-wrapper {
+  border-radius: 8px;
+  border: 1px solid var(--line-color);
+  box-shadow: none;
+  margin: 1.2rem 0;
+}
+
+/* 语言标签弱化，避免抢正文的视觉重心 */
+figure.highlight .code-tools .code-lang,
+.code-wrapper .code-tools .code-lang {
+  opacity: .55;
+  font-size: .78rem;
+  letter-spacing: .04em;
+}
+
+.markdown-body code:not([class*="language-"]) {
+  padding: .15em .4em;
+  border-radius: 4px;
+  font-size: .88em;
+}
+
+/* ---------------- 表格 ---------------- */
+
+.markdown-body table th {
+  background: var(--button-hover-bg-color);
+  font-weight: 600;
+}
+
+.markdown-body table td,
+.markdown-body table th {
+  padding: .5rem .8rem;
+}
+
+/* ---------------- 首页 / 列表 ---------------- */
+
+.index-header {
+  transition: color .2s ease;
+}
+
+.index-card:hover .index-header {
+  color: var(--link-hover-color);
+}
+
+/* ---------------- 页脚 ---------------- */
+
+footer .footer-sep {
+  margin: 0 .5rem;
+  opacity: .35;
+}
+
+/* ---------------- 移动端 ---------------- */
+
+@media (max-width: 767.98px) {
+  .markdown-body {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  #board {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .markdown-body h2 {
+    margin-top: 1.8rem;
+  }
+}
+
+/* 尊重系统的「减少动态效果」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .index-header {
+    transition: none;
+  }
+}
